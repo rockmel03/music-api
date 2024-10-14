@@ -16,10 +16,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "..", "public")));
 
-// routes
+//router imports
+import userRouter from "./routes/user.routes.js";
 
-app.get("/", (req, res) => {
-  res.send("Hello World!");
-});
+// routes
+app.use("/users", userRouter);
+
 
 export default app;
