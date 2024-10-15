@@ -26,6 +26,7 @@ const UserSchema = new mongoose.Schema(
       enum: ["user", "artist"],
       default: "user",
     },
+    playlists: [{ type: mongoose.Schema.Types.ObjectId, ref: "Playlist" }],
     artistProfile: {
       bio: {
         type: String,
@@ -85,7 +86,6 @@ UserSchema.methods.generateRefreshToken = function () {
 
   return jwt.sign(payload, process.env.JWT_REFRESH_SECRET, { expiresIn: "7d" }); // 7 days expiration
 };
-
 
 const User = mongoose.model("User", UserSchema);
 export default User;
