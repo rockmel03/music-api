@@ -18,9 +18,10 @@ app.use(express.static(path.join(__dirname, "..", "public")));
 
 //router imports
 import userRouter from "./routes/user.routes.js";
+import songRouter from "./routes/song.routes.js";
 
 // routes
 app.use("/users", userRouter);
-
+app.use("/songs", songRouter);
 
 export default app;
