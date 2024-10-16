@@ -15,13 +15,19 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "..", "public")));
+app.use(
+  "/uploads",
+  express.static(path.join(__dirname, "..", "public", "uploads"))
+);
 
 //router imports
 import userRouter from "./routes/user.routes.js";
 import songRouter from "./routes/song.routes.js";
+import playlistRouter from "./routes/playlist.routes.js";
 
 // routes
 app.use("/users", userRouter);
 app.use("/songs", songRouter);
+app.use("/playlists", playlistRouter);
 
 export default app;
