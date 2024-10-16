@@ -1,4 +1,5 @@
 import User from "../models/user.model.js";
+import jwt from "jsonwebtoken";
 
 // User registration
 export const register = async (req, res) => {
@@ -23,7 +24,23 @@ export const register = async (req, res) => {
     // Save the user to the database
     await user.save();
 
-    res.status(201).json({ message: "User registered successfully" });
+    // Generate tokens
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
+
+    res.status(201).json({
+      message: "User registered successfully",
+      data: {
+        accessToken,
+        refreshToken,
+        user: {
+          id: user._id,
+          username: user.username,
+          email: user.email,
+          role: user.role,
+        },
+      },
+    });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
@@ -41,7 +58,7 @@ export const login = async (req, res) => {
     }
 
     // Check if the password is valid
-    const isMatch = await User.comparePassword(password);
+    const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
