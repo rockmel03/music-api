@@ -1,18 +1,29 @@
 import Song from "../models/song.model.js";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Create a new song
 export const createSong = async (req, res) => {
   try {
-    const {
-      title,
-      artists,
-      album,
-      genre,
-      duration,
-      releaseDate,
-      audioFileUrl,
-      coverImage,
-    } = req.body;
+    // Access the uploaded files
+    const audioFile = req.files["audioFile"] ? req.files["audioFile"][0] : null;
+    const coverImageFile = req.files["coverImage"]
+      ? req.files["coverImage"][0]
+      : null;
+
+    if (!audioFile || !coverImageFile) {
+      return res
+        .status(400)
+        .json({ message: "Audio file and cover image are required" });
+    }
+    
+    // Save file paths or URLs for audio file and cover image
+    const audioFileUrl = `/uploads/${audioFile.filename}`;
+    const coverImage = `/uploads/${coverImageFile.filename}`;
+
+    const { title, artists, album, genre, duration, releaseDate } = req.body;
 
     // Validate that artists array is provided
     if (!artists || artists.length === 0) {
@@ -26,6 +37,11 @@ export const createSong = async (req, res) => {
       return res
         .status(400)
         .json({ message: "One or more artist IDs are invalid" });
+    }
+
+    // Check if the file was uploaded
+    if (req.files.length === 0) {
+      return res.status(400).json({ message: "No file uploaded" });
     }
 
     // Create the song
@@ -95,16 +111,7 @@ export const getSongById = async (req, res) => {
 // Update a song
 export const updateSong = async (req, res) => {
   try {
-    const {
-      title,
-      artists,
-      album,
-      genre,
-      duration,
-      releaseDate,
-      audioFileUrl,
-      coverImage,
-    } = req.body;
+    const { title, artists, album, genre, duration, releaseDate } = req.body;
 
     // Find the song by its ID
     const song = await Song.findById(req.params.id);
@@ -127,14 +134,55 @@ export const updateSong = async (req, res) => {
       song.artists = artists;
     }
 
+    // Access the uploaded files
+    const audioFile = req.files["audioFile"] ? req.files["audioFile"][0] : null;
+    const coverImageFile = req.files["coverImage"]
+      ? req.files["coverImage"][0]
+      : null;
+
+    // Update uploaded files urls if provided
+
+    if (audioFile) {
+      // delete the previously uploaded files
+      const previousFilePath = path.join(
+        __dirname,
+        "..",
+        "..",
+        "public",
+        ...song.audioFileUrl.split("/")
+      );
+
+      fs.unlink(previousFilePath, (err) => {
+        if (err) throw err;
+        console.log(`${previousFilePath} was deleted`);
+      });
+
+      song.audioFileUrl = `/uploads/${audioFile.filename}`;
+    }
+
+    if (coverImageFile) {
+      const previousFilePath = path.join(
+        __dirname,
+        "..",
+        "..",
+        "public",
+        ...song.coverImage.split("/")
+      );
+
+      fs.unlink(previousFilePath, (err) => {
+        if (err) throw err;
+        console.log(`${previousFilePath} was deleted`);
+      });
+
+      song.coverImage = `/uploads/${coverImageFile.filename}`;
+    }
+
     // Update other fields if provided
     if (title) song.title = title;
     if (album) song.album = album;
     if (genre) song.genre = genre;
     if (duration) song.duration = duration;
     if (releaseDate) song.releaseDate = releaseDate;
-    if (audioFileUrl) song.audioFileUrl = audioFileUrl;
-    if (coverImage) song.coverImage = coverImage;
 
     // Save the updated song
     await song.save();
