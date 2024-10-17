@@ -164,6 +164,10 @@ export const addSongToPlaylist = async (req, res) => {
       });
     }
 
+    if (!req.body.songId) {
+      return res.status(400).json({ message: "SongId is required" });
+    }
+
     // Validate the song ID
     const song = await Song.findById(req.body.songId);
     if (!song) {
