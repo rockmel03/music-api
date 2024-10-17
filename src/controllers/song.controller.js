@@ -1,4 +1,5 @@
 import Song from "../models/song.model.js";
+import User from "../models/user.model.js";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -18,7 +19,7 @@ export const createSong = async (req, res) => {
         .status(400)
         .json({ message: "Audio file and cover image are required" });
     }
-    
+
     // Save file paths or URLs for audio file and cover image
     const audioFileUrl = `/uploads/${audioFile.filename}`;
     const coverImage = `/uploads/${coverImageFile.filename}`;
@@ -210,6 +211,38 @@ export const deleteSong = async (req, res) => {
       return res
         .status(403)
         .json({ message: "You are not authorized to delete this song" });
+    }
+
+    //delete audio and cover image files
+
+    const audioPath = path.join(
+      __dirname,
+      "..",
+      "..",
+      "public",
+      ...song.audioFileUrl.split("/")
+    );
+
+    const coverImagePath = path.join(
+      __dirname,
+      "..",
+      "..",
+      "public",
+      ...song.coverImage.split("/")
+    );
+
+    if (fs.existsSync(audioPath)) {
+      fs.unlink(audioPath, (err) => {
+        if (err) throw err;
+        console.log(`${audioPath} was deleted`);
+      });
+    }
+
+    if (fs.existsSync(coverImagePath)) {
+      fs.unlink(coverImagePath, (err) => {
+        if (err) throw err;
+        console.log(`${coverImagePath} was deleted`);
+      });
     }
 
     // If the authenticated user is one of the collaborating artists, allow the deletion

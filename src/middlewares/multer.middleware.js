@@ -36,7 +36,7 @@ export const upload = multer({
     fileSize: 1024 * 1024 * 10, // 10 MB file size limit
   },
   fileFilter: function (req, file, cb) {
-    const filetypes = /jpeg|jpg|png|mp3|wav/; // Allowed file types
+    const filetypes = /jpeg|jpg|png|mp3|wav|mpeg/; // Allowed file types
 
     // Check the file extension
     const extname = filetypes.test(
